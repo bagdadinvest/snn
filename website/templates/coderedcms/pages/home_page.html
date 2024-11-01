@@ -1,0 +1,262 @@
+{% extends "coderedcms/pages/web_page_notitle.html" %}
+{% load wagtailadmin_tags wagtailcore_tags wagtailimages_tags coderedcms_tags i18n wagtailsnippets_tags %}
+
+{% block content %}
+    <!-- Hero Section -->
+    <div class="hero-wrap js-fullheight" style="background-image: url('{{ page.hero_background_image.file.url }}'); height: 732px; background-position: 50% -25px;" data-stellar-background-ratio="0.5">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row no-gutters slider-text js-fullheight align-items-center justify-content-center" data-scrollax-parent="true" style="height: 732px;">
+                <div class="col-md-8 ftco-animate text-center" data-scrollax=" properties: { translateY: '70%' }" style="transform: translateZ(0px) translateY(0%);">
+                    <div class="icon">
+                        <a href="index.html" class="logo">
+                            <span class="flaticon-flower"></span>
+                            <h1>{{ page.hero_title }}</h1>
+                        </a>
+                    </div>
+                    <h1 class="mb-4" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }" style="opacity: 1; transform: translateZ(0px) translateY(0%);">Beuty Salon</h1>
+                    <p class="mb-5" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }" style="opacity: 1; transform: translateZ(0px) translateY(0%);">{{ page.hero_subtitle }}</p>
+                    <p data-scrollax="properties: { translateY: '30%', opacity: 1.6 }" style="opacity: 1; transform: translateZ(0px) translateY(0%);">
+                        <a href="https://wa.me/{{ page.appointment_phone_number }}" class="btn btn-white btn-outline-white px-4 py-3">Book an appointment now</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% include "coderedcms/snippets/navigation.html" %}
+
+<!-- Services Section -->
+<section class="ftco-section">
+    <div class="container">
+        <div class="row">
+            {% get_service_snippets as service_snippets %}
+            {% for service in service_snippets %}
+                <div class="col-md-4 ftco-animate">
+                    <div class="media d-block text-center block-6 services">
+                        <div class="icon d-flex mb-3">
+                            <span class="{{ service.icon_class }}"></span>
+                        </div>
+                        <div class="media-body">
+                            <h3 class="heading">{{ service.title }}</h3>
+                            <p>{{ service.description }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Our Beauty Experts Section -->
+<section class="ftco-section bg-light">
+    <div class="container">
+        <div class="row justify-content-center mb-5 pb-3">
+            <div class="col-md-7 heading-section ftco-animate text-center">
+                <h2 class="mb-4">Our Beauty Experts</h2>
+                <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
+            </div>
+        </div>
+        <div class="row">
+            {% get_staff_snippets as staff_snippets %}
+            {% for staff in staff_snippets %}
+                <div class="col-lg-3 d-flex mb-sm-4 ftco-animate">
+                    <div class="staff">
+                        <div class="img mb-4" style="background-image: url('{{ staff.background_image.file.url }}');"></div>
+                        <div class="info text-center">
+                            <h3><a href="{{ staff.link }}">{{ staff.name }}</a></h3>
+                            <span class="position">{{ staff.position }}</span>
+                            <div class="text">
+                                <p>{{ staff.description }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+    <!-- Discount Section -->
+    <section class="ftco-section ftco-discount img" style="background-image: url('{{ page.discount_background_image.file.url }}');">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row justify-content-end">
+                <div class="col-md-5 discount ftco-animate">
+                    <h3>{{ page.discount_title }}</h3>
+                    <h2 class="mb-4">{{ page.discount_subtitle }}</h2>
+                    <p class="mb-4">{{ page.discount_description }}</p>
+                    <p><a href="#" class="btn btn-white btn-outline-white px-4 py-3">Book Now</a></p>
+                </div>
+            </div>
+        </div>
+    </section>
+<!-- Our Work Section -->
+<section class="ftco-section">
+    <div class="container">
+        <div class="row justify-content-center mb-5 pb-3">
+            <div class="col-md-7 heading-section text-center ftco-animate">
+                <h2 class="mb-4">Our Work</h2>
+                <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
+            </div>
+        </div>
+        <div class="row">
+            {% get_work_snippets as work_snippets %}
+            {% for work in work_snippets %}
+                <div class="col-md-4 ftco-animate">
+                    <a href="{{ work.link }}" class="work-entry">
+                        <img src="{{ work.image.file.url }}" class="img-fluid" alt="{{ work.title }}">
+                        <div class="info d-flex align-items-center">
+                            <div>
+                                <div class="icon mb-4 d-flex align-items-center justify-content-center">
+                                    <span class="icon-search"></span>
+                                </div>
+                                <h3>{{ work.title }}</h3>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Partner Section -->
+<section class="ftco-partner bg-light">
+    <div class="container">
+        <div class="row partner justify-content-center">
+            <div class="col-md-10">
+                <div class="row">
+                    {% get_partner_snippets as partner_snippets %}
+                    {% for partner in partner_snippets %}
+                        <div class="col-md-3 ftco-animate">
+                            <a href="{{ partner.link }}" class="partner-entry" target="_blank">
+                                <img src="{{ partner.image.file.url }}" class="img-fluid" alt="Partner logo">
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Beauty Pricing Section -->
+<section class="ftco-section">
+    <div class="container">
+        <div class="row justify-content-center mb-5 pb-3">
+            <div class="col-md-7 heading-section text-center ftco-animate">
+                <h2 class="mb-4">Beauty Pricing</h2>
+                <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
+            </div>
+        </div>
+        <div class="row">
+            {% get_pricing_snippets as pricing_snippets %}
+            {% for plan in pricing_snippets %}
+                <div class="col-md-3 ftco-animate">
+                    <div class="pricing-entry pb-5 text-center">
+                        <div>
+                            <h3 class="mb-4">{{ plan.title }}</h3>
+                            <p><span class="price">{{ plan.price }}</span> <span class="per">{{ plan.frequency }}</span></p>
+                        </div>
+                        <ul>
+                            {% for feature in plan.features %}
+                                <li>{{ feature.value }}</li>
+                            {% endfor %}
+                        </ul>
+                        <p class="button text-center"><a href="#" class="btn btn-primary btn-outline-primary px-4 py-3">Order now</a></p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Counter Section -->
+<section class="ftco-section ftco-counter img" id="section-counter" style="background-image: url('{{ page.counter_background_image_url }}');">
+    <div class="overlay"></div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="row">
+                    {% get_counter_snippets as counter_snippets %}
+                    {% for counter in counter_snippets %}
+                        <div class="col-md-6 col-lg-3 d-flex justify-content-center counter-wrap ftco-animate">
+                            <div class="block-18 text-center">
+                                <div class="text">
+                                    <div class="icon"><span class="flaticon-flower"></span></div>
+                                    <span>{{ counter.procedure }}</span>
+                                    <strong class="number" data-number="{{ counter.number }}">{{ counter.number|floatformat }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+    <!-- Appointment Section -->
+    <section class="ftco-section ftco-appointment">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row d-md-flex align-items-center">
+                <div class="col-md-2"></div>
+                <div class="col-md-4 d-flex align-self-stretch ftco-animate">
+                    <div class="appointment-info text-center p-5">
+                        <div class="mb-4">
+                            <h3 class="mb-3">Address</h3>
+                            <p>{{ page.appointment_address }}</p>
+                        </div>
+                        <div class="mb-4">
+                            <h3 class="mb-3">Phone</h3>
+                            <p class="day">
+                                <strong>{{ page.appointment_phone_primary }}</strong>
+                                {% if page.appointment_phone_secondary %}
+                                    or <strong>{{ page.appointment_phone_secondary }}</strong>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            <h3 class="mb-3">Opening Hours</h3>
+                            <p class="day"><strong>{{ page.appointment_opening_hours }}</strong></p>
+                            <span>10:00am - 08:00pm</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 appointment pl-md-5 ftco-animate">
+                    <h3 class="mb-3">Appointments</h3>
+                    <form action="#" class="appointment-form">
+                        <div class="row form-group d-flex">
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" placeholder="First Name">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" placeholder="Last Name">
+                            </div>
+                        </div>
+                        <div class="row form-group d-flex">
+                            <div class="col-md-6">
+                                <div class="input-wrap">
+                                    <div class="icon"><span class="ion-md-calendar"></span></div>
+                                    <input type="text" id="appointment_date" class="form-control" placeholder="Date">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" placeholder="Phone">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <textarea name="" id="" cols="30" rows="3" class="form-control" placeholder="Message"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" value="Order" class="btn btn-white btn-outline-white py-3 px-4">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% load wagtailcore_tags wagtailimages_tags wagtailsnippets_tags %}
+{% get_footer as footer %}
+<!-- Footer Section -->
+<footer class="ftco-footer ftco-section img">
+    <div class="overlay"></div>
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-md-3">
+                <div class="ftco-footer-widget mb-4">
+                    <h2 class="ftco-heading-2">{{ footer.about_title }}</h2>
+                    <p>{{ footer.about_text }}</p>
+                    <ul class="ftco-footer-social list-unstyled float-md-left float-lft mt-5">
+                        {% if footer.twitter_url %}
+                            <li class="ftco-animate"><a href="{{ footer.twitter_url }}"><span class="icon-twitter"></span></a></li>
+                        {% endif %}
+                        {% if footer.facebook_url %}
+                            <li class="ftco-animate"><a href="{{ footer.facebook_url }}"><span class="icon-facebook"></span></a></li>
+                        {% endif %}
+                        {% if footer.instagram_url %}
+                            <li class="ftco-animate"><a href="{{ footer.instagram_url }}"><span class="icon-instagram"></span></a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <div class="ftco-footer-widget mb-4 ml-md-4">
+                    <h2 class="ftco-heading-2">{{ footer.custom_links_title }}</h2>
+                    <ul class="list-unstyled">
+                        {% for link in footer.custom_links %}
+                            <li><a href="{{ link.value.url }}" class="py-2 d-block">{{ link.value.title }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="ftco-footer-widget mb-4">
+                    <h2 class="ftco-heading-2">Have a Questions?</h2>
+                    <div class="block-23 mb-3">
+                        <ul>
+                            <li><span class="icon icon-map-marker"></span><span class="text">{{ footer.address }}</span></li>
+                            <li><a href="tel:{{ footer.phone }}"><span class="icon icon-phone"></span><span class="text">{{ footer.phone }}</span></a></li>
+                            <li><a href="mailto:{{ footer.email }}"><span class="icon icon-envelope"></span><span class="text">{{ footer.email }}</span></a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <p>&copy; <script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="icon-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a></p>
+            </div>
+        </div>
+    </div>
+</footer>
