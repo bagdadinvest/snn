@@ -1,0 +1,15 @@
+{% extends 'base_trendyol.html' %}
+
+{% block content %}
+    <h1>Product List</h1>
+    <div class="product-list">
+        {% for product in products %}
+            <div class="product-item">
+                <img src="{{ product.image }}" alt="{{ product.name }}">
+                <h2>{{ product.name }}</h2>
+                <p>Price: {{ product.price }}</p>
+                <p>Description: {{ product.description }}</p>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "wagtail.contrib.settings",
     "wagtail.contrib.table_block",
     "wagtail.admin",
+    "scrapper",
     # Django
     "django.contrib.admin",
     "django.contrib.auth",

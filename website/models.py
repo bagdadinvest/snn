@@ -442,3 +442,53 @@ class FooterSnippet(models.Model):
     def __str__(self):
         return "Footer Content"
 
+
+
+from coderedcms.models import CoderedWebPage
+from wagtail.fields import StreamField, RichTextField
+from wagtail.blocks import TextBlock
+from wagtail.images.blocks import ImageChooserBlock
+from wagtail.admin.panels import FieldPanel, MultiFieldPanel
+from wagtail.models import Page
+from wagtail.snippets.models import register_snippet
+from django.db import models
+
+# Product Index Page: Parent page that holds all product pages
+class ProductIndexPage(CoderedWebPage):
+    template = "coderedcms/pages/product_index_page.html"
+
+    class Meta:
+        verbose_name = "Product Index Page"
+
+    # Only allow ProductPages to be children of this index page
+    subpage_types = ["website.ProductPage"]
+
+    # Panels for CMS interface
+    content_panels = CoderedWebPage.content_panels + [
+        FieldPanel("title"),
+    ]
+
+
+# Product Page: Represents a single product
+class ProductPage(CoderedWebPage):
+    template = "coderedcms/pages/product_page.html"
+
+    # Product-specific fields
+    price = models.FloatField()
+    discount_price = models.FloatField(blank=True, null=True)
+    description_short = models.CharField(max_length=50, blank=True, null=True)
+    description_long = RichTextField(blank=True, null=True)
+    images = StreamField([('image', ImageChooserBlock())], blank=True)
+
+    # Panels to control which fields are shown in the Wagtail admin
+    content_panels = CoderedWebPage.content_panels + [
+        FieldPanel('price'),
+        FieldPanel('discount_price'),
+        FieldPanel('description_short'),
+        FieldPanel('description_long'),
+        FieldPanel('images'),
+    ]
+
+    class Meta:
+        verbose_name = "Product Page"
+

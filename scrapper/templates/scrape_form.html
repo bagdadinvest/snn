@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scrape Form</title>
+</head>
+<body>
+    <h1>Enter URL to Scrape</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <input type="text" name="url" placeholder="Enter URL" required>
+        <button type="submit">Scrape</button>
+    </form>
+</body>
+</html>

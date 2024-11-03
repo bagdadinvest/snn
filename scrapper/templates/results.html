@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scraping Result</title>
+    <style>
+        pre {
+            white-space: pre-wrap; /* Ensures long lines are wrapped */
+        }
+    </style>
+</head>
+<body>
+    <h1>Scraping Result</h1>
+    <pre>{{ text_content }}</pre> <!-- Display extracted text content -->
+    <a href="{% url 'scrape_view' %}">Go Back</a>
+</body>
+</html>

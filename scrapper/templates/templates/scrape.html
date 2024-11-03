@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Scraper</title>
+</head>
+<body>
+    <h1>Scrape Images from URL</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Scrape Images</button>
+    </form>
+</body>
+</html>
