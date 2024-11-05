@@ -224,3 +224,213 @@ def scrape_and_download_images():
         print("[DEBUG] Final batch of images saved to the database")
 
     print("[DEBUG] All batches complete, image download process finished.")
+
+
+import datetime
+from .models import ProductSku
+
+def scrape_and_create_product_skus():
+    print("Starting product SKU scraping process...")
+    base_url = 'https://www.procsin.com'
+    url = f"{base_url}/cilt-bakimi?ps=16&stock=1"
+
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch(headless=True)
+        page = browser.new_page()
+
+        print(f"Navigating to URL: {url}")
+        page.goto(url)
+        page.wait_for_selector(".product-item")
+        total_products = page.locator(".product-item").count()
+        print(f"Total products found: {total_products}")
+
+        scraped_data = []
+        for index in range(total_products):
+            product = page.locator(".product-item").nth(index)
+
+            title = product.locator('.product-title').inner_text() if product.locator('.product-title').count() > 0 else None
+            price_text = product.locator('.current-price .product-price').inner_text() if product.locator('.current-price .product-price').count() > 0 else None
+            price = float(price_text.replace(' TL', '').replace(',', '.')) if price_text else None
+            url_suffix = product.locator('a.image-wrapper').get_attribute('href') if product.locator('a.image-wrapper').count() > 0 else None
+            product_url = f"{base_url}{url_suffix}" if url_suffix else None
+
+            if not title or not product_url:
+                print(f"Skipping product {index + 1} due to missing title or URL.")
+                continue
+
+            # Generate SKU
+            today = datetime.date.today()
+            sku = f"cilt-bakimi-{today.month:02d}-{today.day:02d}-{index + 1:03d}"
+
+            # Append data to scraped_data list
+            scraped_data.append({
+                'title': title,
+                'price': price,
+                'sku': sku,
+                'constructed_urls': [product_url]
+            })
+            print(f"Product {index + 1} - Title: {title}, SKU: {sku}, URL: {product_url}")
+
+        browser.close()
+        print("Scraping complete.")
+
+    # Save scraped data to ProductSku model
+    for item in scraped_data:
+        ProductSku.objects.update_or_create(
+            sku=item['sku'],
+            defaults={
+                'title': item['title'],
+                'price': item['price'],
+                'constructed_urls': item['constructed_urls']
+            }
+        )
+        print(f"Saved product: {item['title']} with SKU: {item['sku']}")
+
+    print("Product SKU scraping and saving process completed.")
+
+
+
+
+from django.utils import timezone
+from django.core.files.base import ContentFile
+from wagtail.images.models import Image as WagtailImage
+from website.models import ProductPage, ProductIndexPage
+from .models import ProductSku
+import requests
+from playwright.sync_api import sync_playwright
+
+def create_product_page_from_sku(sku_instance):
+    """
+    Scrapes product details for a given SKU, creates a ProductPage if it does not exist,
+    downloads associated images, and adds them to the ProductPage's StreamField.
+    """
+
+    # Step 1: Scrape Product Data and Image URLs
+    def scrape_product_details_and_images(product_url):
+        """
+        Scrapes product details and image URLs from the given URL.
+        """
+        scraped_data = {}
+        image_urls = []
+
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            page = browser.new_page()
+
+            try:
+                # Visit the product page
+                page.goto(product_url)
+                print(f"Visited {product_url}")
+
+                # Extract product details
+                title_element = page.query_selector("#product-title")
+                scraped_data['title'] = title_element.inner_text() if title_element else "No Title Found"
+
+                short_desc_element = page.query_selector(".col-12.document-info-desc")
+                scraped_data['short_description'] = short_desc_element.inner_text() if short_desc_element else ""
+
+                price_element = page.query_selector(".product-price")
+                price_text = price_element.inner_text() if price_element else "0"
+                scraped_data['price'] = float(price_text.replace(',', '.'))
+
+                long_desc_element = page.query_selector("#product-fullbody")
+                scraped_data['long_description'] = long_desc_element.inner_text() if long_desc_element else ""
+
+                # Find all product images
+                image_elements = page.query_selector_all('.product-images-gallery .swiper-slide img') + \
+                                 page.query_selector_all('.product-images-thumb .swiper-slide img')
+
+                # Collect image URLs
+                for img in image_elements[:12]:  # Limit to first 12 images
+                    img_url = img.get_attribute('src')
+                    if img_url:
+                        image_urls.append(img_url)
+
+            except Exception as e:
+                print(f"An error occurred while scraping: {e}")
+            finally:
+                page.close()
+                browser.close()
+
+        return scraped_data, image_urls
+
+    # Step 2: Download Images and Save to Wagtail
+    def download_and_save_images(image_urls):
+        """
+        Downloads images and saves them to Wagtail's Image model.
+        Returns a list of WagtailImage instances.
+        """
+        wagtail_images = []
+
+        for idx, img_url in enumerate(image_urls):
+            try:
+                response = requests.get(img_url)
+                response.raise_for_status()
+
+                # Create a Django file from the image content
+                image_content = ContentFile(response.content, name=f"image_{idx + 1}.jpg")
+                wagtail_image = WagtailImage.objects.create(title=f"Product Image {idx + 1}", file=image_content)
+
+                wagtail_images.append(wagtail_image)
+                print(f"[DEBUG] Image {idx + 1} saved to Wagtail library")
+
+            except Exception as e:
+                print(f"[ERROR] Failed to download or save image {img_url}: {e}")
+
+        return wagtail_images
+
+    # Step 3: Save ProductPage to the Database
+    def save_product_page(sku_instance, scraped_data, wagtail_images):
+        """
+        Saves scraped data as a ProductPage in the database, and attaches images in StreamField.
+        """
+        # Check if the ProductPage already exists
+        if ProductPage.objects.filter(title=scraped_data['title']).exists():
+            print(f"ProductPage for '{scraped_data['title']}' already exists. Skipping.")
+            return
+
+        # Find or create a parent ProductIndexPage
+        parent_page = ProductIndexPage.objects.first()
+        if not parent_page:
+            print("ProductIndexPage does not exist. Create one to continue.")
+            return
+
+        print("All checks passed, proceeding to save ProductPage...")
+
+        try:
+            # Create the ProductPage instance
+            product_page = ProductPage(
+                title=scraped_data['title'],
+                slug=sku_instance.sku,
+                price=scraped_data['price'],
+                description_short=scraped_data['short_description'],
+                description_long=scraped_data['long_description'],
+                first_published_at=timezone.now(),
+                last_published_at=timezone.now(),
+                show_in_menus=True,
+                locale_id=2  # Set locale ID to 2 as requested
+            )
+
+            # Use add_child() to add it under the parent page
+            parent_page.add_child(instance=product_page)
+            product_page.save_revision().publish()
+
+            # Prepare StreamField data for images
+            image_data = [{"type": "image", "value": img.pk} for img in wagtail_images]
+            product_page.images = image_data
+            product_page.save_revision().publish()
+
+            print(f"ProductPage created and published for '{scraped_data['title']}' with SKU '{sku_instance.sku}'")
+
+        except Exception as e:
+            print(f"An error occurred while saving the ProductPage: {e}")
+
+    # Execute Steps
+    product_url = sku_instance.constructed_urls[0]
+    scraped_data, image_urls = scrape_product_details_and_images(product_url)
+
+    if scraped_data:
+        wagtail_images = download_and_save_images(image_urls)
+        save_product_page(sku_instance, scraped_data, wagtail_images)
+    else:
+        print("No data scraped; nothing to save.")

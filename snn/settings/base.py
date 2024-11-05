@@ -43,11 +43,15 @@ INSTALLED_APPS = [
     "wagtail.documents",
     "wagtail.images",
     "wagtail.search",
+    "wagtail_localize",
+    "wagtail_localize.locales",
     "wagtail",
     "wagtail.contrib.settings",
     "wagtail.contrib.table_block",
     "wagtail.admin",
+    'wagtail_modeladmin',
     "scrapper",
+
     # Django
     "django.contrib.admin",
     "django.contrib.auth",
@@ -56,6 +60,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sitemaps",
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
@@ -63,6 +68,7 @@ MIDDLEWARE = [
     "wagtailcache.cache.UpdateCacheMiddleware",
     # Common functionality
     "django.contrib.sessions.middleware.SessionMiddleware",
+    'django.middleware.locale.LocaleMiddleware',  # Add this line
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.common.CommonMiddleware",
     # Security
@@ -74,6 +80,12 @@ MIDDLEWARE = [
     "wagtail.contrib.redirects.middleware.RedirectMiddleware",
     # Fetch from cache. Must be LAST.
     "wagtailcache.cache.FetchFromCacheMiddleware",
+    'snn.middleware.CustomDebugToolbarMiddleware',  # Add this line
+    'snn.middleware.SuperuserDebugMiddleware',
+
+]
+INTERNAL_IPS = [
+    '127.0.0.1',  # local IP for development
 ]
 
 ROOT_URLCONF = "snn.urls"
@@ -130,13 +142,6 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
-
-TIME_ZONE = "America/New_York"
-
-USE_I18N = False
-
-USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
@@ -182,3 +187,36 @@ TAGGIT_CASE_INSENSITIVE = True
 # Sets default for primary key IDs
 # See https://docs.djangoproject.com/en/5.1/ref/models/fields/#bigautofield
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+
+LANGUAGE_CODE = "en-us"
+
+TIME_ZONE = "Europe/Istanbul"
+
+
+USE_I18N = True
+
+USE_TZ = True
+
+WAGTAIL_I18N_ENABLED = True
+
+WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = [
+    ('en', 'English'),
+    ('tr', 'Turkish'),
+    ('fr', 'French'),
+]
+
+AZURE_TRANSLATOR_KEY = '106c8f6b95a4460fae580599a6c74348'  # Replace with your actual key
+
+AZURE_TRANSLATOR_ENDPOINT = 'https://api.cognitive.microsofttranslator.com/'
+
+
+WAGTAILLOCALIZE_MACHINE_TRANSLATOR = {
+    "CLASS": "translations.azure.AzureTranslator",
+    "OPTIONS": {
+        'subscription_key': '106c8f6b95a4460fae580599a6c74348',  # Replace with your actual subscription key
+        'region': 'uaenorth',
+    }
+}
+

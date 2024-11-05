@@ -1,5 +1,5 @@
 import logging
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from .trendyol_scraper import scrape_trendyol_products
@@ -105,22 +105,89 @@ def scraped_list_view(request):
         'is_paginated': page_obj.has_other_pages()
     })
 
+
+
 def scraped_item_detail_view(request, pk):
-    print("Entered scraped_item_detail_view function.")  # Debug statement
+    print("DEBUG: Entered scraped_item_detail_view function.")  # Initial entry
+    try:
+        # Fetch the ScrapedItem object
+        scraped_item = get_object_or_404(ScrapedItem, pk=pk)
+        print(f"DEBUG: Fetched ScrapedItem with ID: {pk}, Title: {scraped_item.title}")
+    except Exception as e:
+        print(f"ERROR: Failed to fetch ScrapedItem with ID: {pk} - {e}")
+        return JsonResponse({'error': 'ScrapedItem not found'}, status=500)
 
-    # Fetch the ScrapedItem object
-    scraped_item = get_object_or_404(ScrapedItem, pk=pk)
-    print(f"Fetched ScrapedItem with ID: {pk}, Title: {scraped_item.title}")  # Debug statement
+    try:
+        # Fetch related images for the ScrapedItem
+        images = scraped_item.images.all()
+        print(f"DEBUG: Fetched {images.count()} related images for ScrapedItem with ID: {pk}")
+    except Exception as e:
+        print(f"ERROR: Failed to fetch images for ScrapedItem ID: {pk} - {e}")
+        return JsonResponse({'error': 'Error fetching images'}, status=500)
 
-    # Fetch related images for the ScrapedItem
-    images = scraped_item.images.all()
-    print(f"Fetched {images.count()} related images for ScrapedItem with ID: {pk}")  # Debug statement
-
-    # Pass the ScrapedItem and related images to the template
+    # Preparing context data for the template
     context = {
         'object': scraped_item,
         'images': images,
     }
-    print("Rendering template with ScrapedItem and related images.")  # Debug statement
+    print("DEBUG: Context data prepared. About to render template.")
 
-    return render(request, 'scrapeditem_detail.html', context)
+    # Render the template with the scraped item and images
+    try:
+        response = render(request, 'scrapeditem_detail.html', context)
+        print("DEBUG: Template rendered successfully.")
+        return response
+    except Exception as e:
+        print(f"ERROR: Template rendering failed - {e}")
+        return JsonResponse({'error': 'Template rendering error'}, status=500)
+
+
+from django.contrib.admin.views.decorators import staff_member_required
+from django.shortcuts import render
+
+@staff_member_required
+def scraper_admin_panel(request):
+    return render(request, 'scraper_admin_panel.html')
+
+from django.http import JsonResponse
+from .utils import scrape_and_create_product_skus  # Assuming this function is in utils.py
+import threading
+
+def scrape_product_skus_view(request):
+    """
+    View to initiate the SKU scraping and saving process.
+    Runs in a separate thread to prevent blocking.
+    """
+    if request.method == 'POST':
+        # Start the scraping process in a separate thread
+        scraping_thread = threading.Thread(target=scrape_and_create_product_skus)
+        scraping_thread.start()
+
+        return JsonResponse({
+            'status': 'success',
+            'message': 'SKU scraping process has been started successfully.'
+        })
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Invalid request method. Please use POST.'
+    })
+
+# In views.py
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from .models import ProductSku
+from .utils import create_product_page_from_sku
+
+def create_product_page_view(request, sku_id):
+    """
+    View to create a ProductPage from a given SKU.
+    """
+    # Get the ProductSku instance by ID or return a 404 if not found
+    sku_instance = get_object_or_404(ProductSku, id=sku_id)
+
+    # Call the function to create the ProductPage
+    try:
+        create_product_page_from_sku(sku_instance)
+        return JsonResponse({"status": "success", "message": f"ProductPage created for SKU '{sku_instance.sku}'."})
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)})

@@ -462,11 +462,17 @@ class ProductIndexPage(CoderedWebPage):
 
     # Only allow ProductPages to be children of this index page
     subpage_types = ["website.ProductPage"]
+    index_query_pagemodel = "website.ProductPage"
 
     # Panels for CMS interface
     content_panels = CoderedWebPage.content_panels + [
         FieldPanel("title"),
     ]
+
+    def get_context(self, request):
+        context = super().get_context(request)
+        context['products'] = ProductPage.objects.live().descendant_of(self)
+        return context
 
 
 # Product Page: Represents a single product
@@ -476,7 +482,7 @@ class ProductPage(CoderedWebPage):
     # Product-specific fields
     price = models.FloatField()
     discount_price = models.FloatField(blank=True, null=True)
-    description_short = models.CharField(max_length=50, blank=True, null=True)
+    description_short = RichTextField(blank=True, null=True)
     description_long = RichTextField(blank=True, null=True)
     images = StreamField([('image', ImageChooserBlock())], blank=True)
 
@@ -491,4 +497,8 @@ class ProductPage(CoderedWebPage):
 
     class Meta:
         verbose_name = "Product Page"
+
+    parent_page_types = ["website.ProductIndexPage"]
+
+
 

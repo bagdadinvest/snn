@@ -1,0 +1,37 @@
+{% extends "wagtailadmin/base.html" %}
+{% load wagtailadmin_tags %}
+
+{% block content %}
+<h1>Scraper Admin Panel</h1>
+<p>Manage scraping tasks from here:</p>
+
+<div>
+    <a href="{% url 'scrape_trendyol' %}" class="button">Scrape Trendyol Products</a>
+    <a href="{% url 'scrape_procsin' %}" class="button">Scrape Procsin Products</a>
+    <a href="{% url 'download_images' %}" class="button">Download Images</a>
+    <!-- New button for SKU scraping -->
+    <button onclick="startSkuScraping()" class="button">Scrape Product SKUs</button>
+    <form action="{% url 'process_single_sku' %}" method="post"> <!-- Updated URL name -->
+        {% csrf_token %}
+        <button type="submit" class="button">Process First ProductSKU</button> <!-- Adjusted label -->
+    </form>
+</div>
+
+<script>
+    function startSkuScraping() {
+        fetch("{% url 'scrape_product_skus' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',  // Ensure CSRF protection is included
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);  // Display success or error message
+        })
+        .catch(error => console.error('Error:', error));
+    }
+</script>
+{% endblock %}

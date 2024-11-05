@@ -1,4 +1,4 @@
-{% load wagtailcore_tags wagtailsettings_tags wagtailimages_tags coderedcms_tags i18n django_bootstrap5 %}
+{% load wagtailcore_tags wagtailsettings_tags wagtailimages_tags coderedcms_tags i18n django_bootstrap5 language_switcher %}
 {% wagtail_site as site %}
 
 <!-- Navbar -->
@@ -13,6 +13,7 @@
                 {{ site.site_name }}
             {% endif %}
         </a>
+<a href="{% language_switcher 'en' %}">English</a> | <a href="{% language_switcher 'tr' %}">Türkçe</a>
 
         <!-- Navbar Toggler (for mobile view) -->
 	      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">

@@ -154,3 +154,24 @@ class ScrapedRefund(models.Model):
 
     def __str__(self):
         return f"{self.pk}"
+
+
+from django.db import models
+from wagtail.admin.panels import FieldPanel
+
+class ProductSku(models.Model):
+    title = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    sku = models.CharField(max_length=20, unique=True)
+    constructed_urls = models.JSONField()  # Store URLs as a list in JSON format
+
+    panels = [
+        FieldPanel('title'),
+        FieldPanel('price'),
+        FieldPanel('sku'),
+        FieldPanel('constructed_urls'),
+    ]
+
+    def __str__(self):
+        return f"{self.title} - {self.sku}"
+

@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load category_template_tags %}
+{% block content %}
+
+<style>
+    .selection-2 {
+        display: block;
+        width: 100%;
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        background-color: #fff;
+        border: 1px solid #ced4da !important;
+        border-radius: 0.25rem;
+    }
+
+    /* Add styles for masonry layout */
+    .grid {
+        display: flex;
+        flex-wrap: wrap;
+        margin-left: -10px;
+        width: auto;
+    }
+    .grid-item {
+        margin: 10px;
+        width: calc(33.333% - 20px);
+    }
+    .grid-item img {
+        width: 100%;
+        height: auto;
+    }
+</style>
+
+<!-- Title Page -->
+<section class="bg-title-page p-t-50 p-b-40" style="background-image: url({% static 'images/heading-pages-02.jpg' %});">
+    <h2 class="l-text2 t-center">Shop</h2>
+    <p class="m-text13 t-center">All categories</p>
+</section>
+
+<!-- Content page -->
+<section class="bgwhite p-t-55 p-b-65">
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-sm-6 col-md-4 col-lg-3 p-b-50">
+                <div class="leftbar p-r-20 p-r-0-sm">
+                    <h4 class="m-text14 p-b-7">Categories</h4>
+                    <ul class="p-b-54">
+                        <li class="p-t-4"><a href="/shop" class="s-text13 active1">All</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <div class="col-sm-6 col-md-8 col-lg-9 p-b-50">
+                <div class="flex-sb-m flex-w p-b-35">
+                    <div class="flex-w">
+                        <div class="rs2-select2 bo4 of-hidden w-size12 m-t-5 m-b-5 m-r-10">
+                            <select class="selection-2" name="sorting">
+                                <option>Default Sorting</option>
+                                <option>Popularity</option>
+                                <option>Price: low to high</option>
+                                <option>Price: high to low</option>
+                            </select>
+                        </div>
+                    </div>
+                    <span class="s-text8 p-t-5 p-b-5">
+                        Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} results
+                    </span>
+                </div>
+
+                <!-- Products with Masonry Layout -->
+                <div class="grid" id="product-grid">
+                    {% for item in object_list %}
+                    <div class="grid-item">
+                        <div class="block2">
+                            <div class="block2-img wrap-pic-w of-hidden pos-relative block2-labelnew">
+                                {% with item.images.all|first as image %}
+                                {% if image %}
+                                <img src="{{ image.image.url }}" alt="{{ item.title }}" style="height: 360px;">
+                                {% else %}
+                                <img src="{% static 'images/no-image.png' %}" alt="No image available" style="height: 360px;">
+                                {% endif %}
+                                {% endwith %}
+                                <div class="block2-overlay trans-0-4">
+                                    <a href="#" class="block2-btn-addwishlist hov-pointer trans-0-4">
+                                        <i class="icon-wishlist icon_heart_alt" aria-hidden="true"></i>
+                                    </a>
+                                    <div class="block2-btn-addcart w-size1 trans-0-4">
+                                        <button class="flex-c-m size1 bg4 bo-rad-23 hov1 s-text1 trans-0-4">Add to Cart</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="block2-txt p-t-20">
+                                <a href="{% url 'scrapeditem_detail' item.pk %}" class="block2-name dis-block s-text3 p-b-5">{{ item.title }}</a>
+                                <span class="block2-price m-text6 p-r-5">${{ item.price }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Load Masonry and Infinite Scroll Scripts -->
+<script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+<script>
+    // Initialize Masonry
+    var grid = document.querySelector('.grid');
+    var msnry = new Masonry(grid, {
+      itemSelector: '.grid-item',
+      columnWidth: '.grid-item',
+      percentPosition: true
+    });
+
+    let page = 2; // Start from page 2 since the first page is already loaded
+
+    // Scroll event listener
+    window.onscroll = function() {
+        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+            // Check if more data is available
+            fetchMoreItems();
+        }
+    };
+
+    function fetchMoreItems() {
+        fetch(`?page=${page}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.items && data.items.length > 0) {
+                let itemsHTML = '';
+                data.items.forEach(item => {
+                    itemsHTML += `
+                        <div class="grid-item">
+                            <div class="block2">
+                                <div class="block2-img wrap-pic-w of-hidden pos-relative block2-labelnew">
+                                    ${item.image_url ? `<img src="${item.image_url}" alt="${item.title}" style="height: 360px;">` : `<img src="{% static 'images/no-image.png' %}" alt="No image available" style="height: 360px;">`}
+                                    <div class="block2-overlay trans-0-4">
+                                        <a href="#" class="block2-btn-addwishlist hov-pointer trans-0-4">
+                                            <i class="icon-wishlist icon_heart_alt" aria-hidden="true"></i>
+                                        </a>
+                                        <div class="block2-btn-addcart w-size1 trans-0-4">
+                                            <button class="flex-c-m size1 bg4 bo-rad-23 hov1 s-text1 trans-0-4">Add to Cart</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="block2-txt p-t-20">
+                                    <a href="${item.url}" class="block2-name dis-block s-text3 p-b-5">${item.title}</a>
+                                    <span class="block2-price m-text6 p-r-5">$${item.price}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                let newItems = document.createElement('div');
+                newItems.innerHTML = itemsHTML;
+                let elems = newItems.querySelectorAll('.grid-item');
+                elems.forEach(elem => grid.appendChild(elem));
+                msnry.appended(elems);
+
+                page += 1;
+            }
+        })
+        .catch(error => console.error('Error fetching items:', error));
+    }
+</script>
+{% endblock %}
