@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.sitemaps",
     'debug_toolbar',
+    'csp',
 ]
 
 MIDDLEWARE = [
@@ -84,6 +85,9 @@ MIDDLEWARE = [
     'snn.middleware.SuperuserDebugMiddleware',
 
 ]
+
+CSP_FRAME_ANCESTORS = ["'self'", "https://lona.beyond-board.me"]
+
 INTERNAL_IPS = [
     '127.0.0.1',  # local IP for development
 ]
@@ -157,6 +161,8 @@ STATIC_URL = "/static/"
 
 MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = "/media/"
+
+X_FRAME_OPTIONS = 'ALLOW-FROM HTTPS://LONA.BEYOND-BOARD.ME'
 
 
 # Login
